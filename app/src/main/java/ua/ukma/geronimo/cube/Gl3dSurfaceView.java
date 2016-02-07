@@ -1,7 +1,7 @@
 package ua.ukma.geronimo.cube;
 
+import static android.opengl.GLES20.*;
 import android.content.Context;
-import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -36,7 +36,7 @@ public class Gl3dSurfaceView extends GLSurfaceView {
         setRenderer(renderer);
     }
 
-    public PerspectiveCamera getCamera() {
+    public Camera getCamera() {
         return renderer.camera;
     }
 
@@ -63,25 +63,33 @@ public class Gl3dSurfaceView extends GLSurfaceView {
         return true;
     }
 
+    /**
+     * GLSurfaceView.Renderer implementation for this GLSurfaceView
+     */
     private class Gl3dRenderer implements GLSurfaceView.Renderer {
 
-        private PerspectiveCamera camera;
-        private LightPoint light;
+        private Program program;
+        private Camera camera;
         private List<Cube> cubes;
 
         public Gl3dRenderer() {
-            camera = new PerspectiveCamera();
+            camera = new Camera();
             camera.setPosition(1.0f, 2.0f, 1.5f);
             camera.setRotation(-15.0f, 15.0f);
         }
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            GLES20.glEnable(GLES20.GL_CULL_FACE);
-            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glEnable(GL_CULL_FACE);
+            glEnable(GL_DEPTH_TEST);
 
-            light = new LightPoint(2.0f, 1.5f, 1.0f);
+            Shader vertexShader = new Shader(
+                    ResourceLoader.loadRaw(R.raw.cube_vertex), GL_VERTEX_SHADER);
+            Shader fragmentShader = new Shader(
+                    ResourceLoader.loadRaw(R.raw.cube_fragment), GL_FRAGMENT_SHADER);
+            program = new Program(
+                    Arrays.asList(vertexShader, fragmentShader));
 
             cubes = Arrays.asList(
                     new Cube(),
@@ -95,14 +103,17 @@ public class Gl3dSurfaceView extends GLSurfaceView {
 
         @Override
         public void onDrawFrame(GL10 gl) {
-            GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
-            camera.update();
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            program.use();
 
-            light.draw(camera);
+            glUniformMatrix4fv(program.uniform("uView"), 1, false, camera.viewMatrix(), 0);
+            glUniformMatrix4fv(program.uniform("uProjection"), 1, false, camera.projectionMatrix(), 0);
 
             for (Cube cube : cubes) {
-                cube.draw(camera, light);
+                cube.draw(program);
             }
+
+            program.stopUsing();
         }
     }
 

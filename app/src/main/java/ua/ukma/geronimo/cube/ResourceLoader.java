@@ -1,6 +1,8 @@
 package ua.ukma.geronimo.cube;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -23,18 +25,22 @@ public class ResourceLoader {
         ResourceLoader.context = context;
     }
 
-    public  static String readRaw(final int id) {
+    public static String loadRaw(final int id) {
         StringBuilder str = new StringBuilder();
         try ( InputStream is = context.getResources().openRawResource(id);
               InputStreamReader isReader = new InputStreamReader(is);
-              BufferedReader reader = new BufferedReader(isReader)){
+              BufferedReader bReader = new BufferedReader(isReader)){
             String line;
-            while((line = reader.readLine()) != null ) {
+            while((line = bReader.readLine()) != null ) {
                 str.append(line).append('\n');
             }
         } catch (IOException e) {
             Log.d(TAG, "Failed to read resource: " + id);
         }
         return str.toString();
+    }
+
+    public static Bitmap loadBitmap(final int id) {
+       return BitmapFactory.decodeResource(context.getResources(), id);
     }
 }

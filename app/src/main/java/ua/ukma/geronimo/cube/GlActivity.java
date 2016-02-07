@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
@@ -15,17 +14,12 @@ public class GlActivity extends AppCompatActivity {
     private static final float TRANSLATION_RATE = 0.5f;
 
     private Gl3dSurfaceView glSurfaceView;
-    private PerspectiveCamera camera;
+    private Camera camera;
 
     private TextView posText;
     private float[] position = new float[3];
     private TextView rotText;
     private float[] rotation = new float[2];
-
-    private Button buttonW;
-    private Button buttonA;
-    private Button buttonS;
-    private Button buttonD;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +38,7 @@ public class GlActivity extends AppCompatActivity {
         camera.observablePosition().addObserver(new Observer() {
             @Override
             public void update(Observable observable, Object data) {
-                ObservableFloatArray observablePos = (ObservableFloatArray) observable;
-                observablePos.copyTo(position);
-                posText.setText(Arrays.toString(position));
+                posText.setText(Arrays.toString(camera.getPosition()));
             }
         });
 
@@ -55,16 +47,14 @@ public class GlActivity extends AppCompatActivity {
         camera.observableRotation().addObserver(new Observer() {
             @Override
             public void update(Observable observable, Object data) {
-                ObservableFloatArray observableRot = (ObservableFloatArray) observable;
-                observableRot.copyTo(rotation);
-                rotText.setText(Arrays.toString(rotation));
+                rotText.setText(Arrays.toString(camera.getRotation()));
             }
         });
 
-        buttonW = (Button) findViewById(R.id.buttonW);
-        buttonA = (Button) findViewById(R.id.buttonA);
-        buttonS = (Button) findViewById(R.id.buttonS);
-        buttonD = (Button) findViewById(R.id.buttonD);
+        Button buttonW = (Button) findViewById(R.id.buttonW);
+        Button buttonA = (Button) findViewById(R.id.buttonA);
+        Button buttonS = (Button) findViewById(R.id.buttonS);
+        Button buttonD = (Button) findViewById(R.id.buttonD);
 
         buttonW.setOnClickListener(new View.OnClickListener() {
             @Override
